@@ -983,7 +983,7 @@ if (!('sDemote' in chat)) chat.sDemote = ''
 if (!('sCondition' in chat)) chat.sCondition = ''
 if (!('sAutorespond' in chat)) chat.sAutorespond = '' 
 if (!('delete' in chat)) chat.delete = false                   
-if (!('modohorny' in chat)) chat.modohorny = true       
+if (!('modohorny' in chat)) chat.modohorny = false       
 if (!('stickers' in chat)) chat.stickers = false            
 if (!('autosticker' in chat)) chat.autosticker = false      
 if (!('audios' in chat)) chat.audios = true               
@@ -1009,7 +1009,7 @@ if (!('antitoxic' in chat)) chat.antitoxic = false
 if (!('game' in chat)) chat.game = true
 if (!('game2' in chat)) chat.game2 = true
 if (!('simi' in chat)) chat.simi = false
-if (!('antiTraba' in chat)) chat.antiTraba = true
+if (!('antiTraba' in chat)) chat.antiTraba = false
 if (!('primaryBot' in chat)) chat.primaryBot = null
 if (!('autolevelup' in chat))  chat.autolevelup = false
 if (!isNumber(chat.expired)) chat.expired = 0
@@ -1031,7 +1031,7 @@ sDemote: '',
 sCondition: '', 
 sAutorespond: '', 
 delete: false,
-modohorny: true,
+modohorny: false,
 stickers: false,
 autosticker: false,
 audios: false,
@@ -1057,7 +1057,7 @@ antitoxic: false,
 game: true, 
 game2: true, 
 simi: false,
-antiTraba: true,
+antiTraba: false,
 primaryBot: null,
 autolevelup: false,
 expired: 0,
@@ -1093,7 +1093,7 @@ antiSpam: false,
 modoia: false, 
 anticommand: false, 
 prefix: opts['prefix'] || '*/i!#$%+£¢€¥^°=¶∆×÷π√✓©®&.\\-.@Aa',
-jadibotmd: false,
+jadibotmd: true,
 }} catch (e) {
 console.error(e)
 }
@@ -1150,14 +1150,26 @@ let usedPrefix
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
 const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
-const participants = (m.isGroup ? groupMetadata.participants : []) || []
+const participants = (m.isGroup ? groupMetadata.participants.map(v => ({ ...v, id: v.jid })) : []) || []
 let numBot = (conn.user.lid || '').replace(/:.*/, '') || false
 const detectwhat2 = m.sender.includes('@lid') ? `${numBot}@lid` : conn.user.jid
-const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
-const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == detectwhat2) : {}) || {}
-const isRAdmin = user?.admin == 'superadmin' || false
-const isAdmin = isRAdmin || user?.admin == 'admin' || false //user admins? 
-const isBotAdmin = bot?.admin || false //Detecta sin el bot es admin
+
+// Normaliza el JID del remitente para una búsqueda precisa
+const senderNormalized = conn.decodeJid(m.sender);
+
+// Normaliza el JID del bot para la comparación
+const botJidNormalized = conn.decodeJid(conn.user.jid);
+
+// Encuentra el objeto del usuario comparando el JID normalizado con el campo 'jid' del participante
+const user = (m.isGroup ? participants.find(u => u.jid === senderNormalized) : {}) || {}
+
+// Encuentra el objeto del bot comparando el JID normalizado con el campo 'jid' del participante
+const bot = (m.isGroup ? participants.find(u => u.jid === botJidNormalized) : {}) || {}
+
+const isRAdmin = user?.admin === 'superadmin' || false
+const isAdmin = isRAdmin || user?.admin === 'admin' || false
+const isBotAdmin = bot?.admin === 'superadmin' || bot?.admin === 'admin' || false
+
 m.isWABusiness = global.conn.authState?.creds?.platform === 'smba' || global.conn.authState?.creds?.platform === 'smbi'
 m.isChannel = m.chat.includes('@newsletter') || m.sender.includes('@newsletter')
 	
@@ -1189,7 +1201,7 @@ if (plugin.tags && plugin.tags.includes('admin')) {
 // global.dfail('restrict', m, this)
 continue
 }
-const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&Aa');
             let _prefix = plugin.customPrefix ? plugin.customPrefix : this.prefix ? this.prefix : prefix; // Usamos prefix local
             let match = (_prefix instanceof RegExp ?
                 [[_prefix.exec(m.text), _prefix]] :
@@ -1309,7 +1321,7 @@ m.reply('Exp limit') // Hehehe
 else               
 if (!isPrems && plugin.money && global.db.data.users[m.sender].money < plugin.money * 1) {
 //this.reply(m.chat, `NO TIENE COINS`, m)
-this.sendMessage(m.chat, {text: `NO TIENE COINS𝙎`,  contextInfo: {externalAdReply :{ mediaUrl: null, mediaType: 1, description: null, title: gt, body: wm, previewType: 0, thumbnail: gataImg, sourceUrl: accountsgb }}}, { quoted: m })         
+this.sendMessage(m.chat, {text: `NO TIENE COINS `,  contextInfo: {externalAdReply :{ mediaUrl: null, mediaType: 1, description: null, title: gt, body: wm, previewType: 0, thumbnail: gataImg, sourceUrl: accountsgb }}}, { quoted: m })         
 continue     
 }
 			
@@ -1385,7 +1397,7 @@ if (m.limit)
 m.reply(+m.limit + lenguajeGB.smsCont8())
 }
 if (m.money)
-m.reply(+m.money + ' COINS USADOS')  
+m.reply(+m.money + ' COINS USADO(S)')  
 break
 }}} catch (e) {
 console.error(e)
