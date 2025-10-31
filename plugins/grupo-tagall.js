@@ -7,7 +7,7 @@ throw false
 if (command == 'tagall' || command == 'invocar' || command == 'todos' || command == 'invocación' || command == 'invocacion') {
 let pesan = args.join` `
 let oi = `${pesan}`
-let teks = `Are Menciona menciona\n\n${oi}\n\nMenciones:`
+let teks = `Are Menciona menciona\n${oi}\n\nMenciones:`
 for (let mem of participants) {
 teks += `🌻✨  @${mem.id.split('@')[0]}\n`}
 teks += `${global.packname}`
